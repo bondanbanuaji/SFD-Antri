@@ -1,0 +1,72 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   @db.VarChar(255) // Argon2 hash
+  role      Role     @default(PETUGAS)
+  name      String   @db.VarChar(255)
+  loket     Loket?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Loket {
+  id        Int         @id @default(autoincrement())
+  name      String      @db.VarChar(50) // "Loket 1", "Loket 2", etc.
+  userId    String?     @unique // Currently assigned staff
+  user      User?       @relation(fields: [userId], references: [id])
+  queues    Queue[]
+  status    LoketStatus @default(CLOSED)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Queue {
+  id         Int         @id @default(autoincrement())
+  number     Int         // The sequence number (1, 2, 3...)
+  code       String      @db.VarChar(10) // "U-001", "B-001"
+  type       ServiceType
+  status     QueueStatus @default(WAITING)
+  loketId    Int?
+  loket      Loket?      @relation(fields: [loketId], references: [id])
+  
+  // Timestamps for Analytics
+  createdAt  DateTime    @default(now()) // Waktu ambil
+  calledAt   DateTime?   // Waktu panggil
+  finishedAt DateTime?   // Waktu selesai/batal
+  
+  @@index([status, type])
+  @@index([createdAt])
+}
+
+enum Role {
+  ADMIN
+  PETUGAS
+}
+
+enum ServiceType {
+  UMUM   // Prefix U
+  BARANG // Prefix B
+}
+
+enum QueueStatus {
+  WAITING
+  CALLED
+  COMPLETED
+  SKIPPED  // Batal
+}
+
+enum LoketStatus {
+  OPEN
+  CLOSED
+  BREAK
+}

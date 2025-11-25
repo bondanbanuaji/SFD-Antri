@@ -1,0 +1,7 @@
+# Database MySQL XAMPP
+DATABASE_URL="mysql://root:@localhost:3306/antrian_db"
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NODE_ENV=development
+JWT_SECRET=your-secret-key-change-this-in-production
