@@ -2,119 +2,167 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LogIn } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { toast } from 'sonner';
+import { Loader2, LogIn, Lock, User, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export default function LoginPage() {
     const router = useRouter();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-        setIsLoading(true);
+
+        if (!username || !password) {
+            toast.error('Username dan password harus diisi');
+            return;
+        }
+
+        setLoading(true);
 
         try {
-            const response = await fetch('/api/auth/login', {
+            const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || 'Login gagal');
-            }
+            const data = await res.json();
 
-            const data = await response.json();
+            if (res.ok) {
+                toast.success(`Selamat datang, ${data.user.name}!`);
 
-            // Redirect based on role
-            if (data.user.role === 'ADMIN') {
-                router.push('/admin');
+                // Redirect based on role
+                setTimeout(() => {
+                    if (data.user.role === 'ADMIN') {
+                        router.push('/admin');
+                    } else {
+                        router.push('/loket');
+                    }
+                }, 500);
             } else {
-                router.push('/loket');
+                toast.error(data.error || 'Login gagal');
             }
-        } catch (err: any) {
-            setError(err.message);
+        } catch (error) {
+            toast.error('Terjadi kesalahan, silakan coba lagi');
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
+    const quickLogin = (user: string, pass: string) => {
+        setUsername(user);
+        setPassword(pass);
+        toast.info(`Kredensial ${user} telah diisi`);
+    };
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center p-8">
-            <Card className="p-8 max-w-md w-full bg-white">
-                <div className="space-y-6">
-                    <div className="text-center">
-                        <h1 className="text-3xl font-bold text-gray-800">
-                            Login Petugas
-                        </h1>
-                        <p className="text-gray-600 mt-2">
-                            Sistem Antrian Dinas Perhubungan
-                        </p>
-                    </div>
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-950 flex items-center justify-center p-4">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
 
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="username">Username</Label>
-                            <Input
-                                id="username"
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                placeholder="Masukkan username"
-                                required
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Masukkan password"
-                                required
-                            />
-                        </div>
-
-                        {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-                                {error}
-                            </div>
-                        )}
-
-                        <Button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full gap-2"
-                        >
-                            {isLoading ? (
-                                'Memproses...'
-                            ) : (
-                                <>
-                                    <LogIn className="w-4 h-4" />
-                                    Login
-                                </>
-                            )}
-                        </Button>
-                    </form>
-
-                    <div className="text-center text-sm text-gray-600">
-                        <p>Demo Credentials:</p>
-                        <p className="font-mono text-xs mt-1">
-                            admin / admin123 atau petugas1 / petugas123
-                        </p>
+            <div className="w-full max-w-md relative z-10">
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <Link href="/" className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors mb-4">
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Kembali ke Beranda</span>
+                    </Link>
+                    <div className="flex justify-center items-center gap-4 mt-4 mb-2">
+                        <div className="h-px flex-1 bg-gray-300 dark:bg-gray-700" />
+                        <ThemeToggle />
+                        <div className="h-px flex-1 bg-gray-300 dark:bg-gray-700" />
                     </div>
                 </div>
-            </Card>
+
+                {/* Login Card */}
+                <Card className="border-2 border-gray-200 dark:border-gray-800 shadow-2xl bg-white dark:bg-gray-900">
+                    <CardHeader className="space-y-1 text-center pb-6">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-900 dark:bg-gray-100 flex items-center justify-center">
+                            <Lock className="w-8 h-8 text-white dark:text-gray-900" />
+                        </div>
+                        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                            Login
+                        </CardTitle>
+                        <CardDescription className="text-gray-600 dark:text-gray-400">
+                            Masuk ke sistem antrian digital
+                        </CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Username Field */}
+                            <div className="space-y-2">
+                                <Label htmlFor="username" className="text-gray-700 dark:text-gray-300">
+                                    Username
+                                </Label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                    <Input
+                                        id="username"
+                                        type="text"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        placeholder="Masukkan username"
+                                        disabled={loading}
+                                        className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Password Field */}
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">
+                                    Password
+                                </Label>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Masukkan password"
+                                        disabled={loading}
+                                        className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Submit Button */}
+                            <Button
+                                type="submit"
+                                className="w-full bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 text-white dark:text-gray-900 h-11"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Memproses...
+                                    </>
+                                ) : (
+                                    <>
+                                        <LogIn className="mr-2 h-4 w-4" />
+                                        Login
+                                    </>
+                                )}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+
+                {/* Footer Note */}
+                <p className="text-center text-xs text-gray-500 dark:text-gray-500 mt-6">
+                    Sistem Antrian Digital - Dinas Perhubungan
+                </p>
+            </div>
         </div>
     );
 }

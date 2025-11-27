@@ -1,7 +1,13 @@
 import { ServiceType, Queue } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
-export async function generateQueueNumber(type: ServiceType): Promise<Queue> {
+export async function generateQueueNumber(
+    type: ServiceType,
+    transportCode?: string,
+    passengerName?: string,
+    passengerRoute?: string,
+    loketId?: number
+): Promise<Queue> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -28,6 +34,10 @@ export async function generateQueueNumber(type: ServiceType): Promise<Queue> {
             code,
             type,
             status: 'WAITING',
+            transportCode,
+            passengerName,
+            passengerRoute,
+            loketId,
         },
     });
 
@@ -72,6 +82,9 @@ export async function completeQueue(queueId: number) {
             status: 'COMPLETED',
             finishedAt: new Date(),
         },
+        include: {
+            loket: true,
+        },
     });
 }
 
@@ -81,6 +94,9 @@ export async function skipQueue(queueId: number) {
         data: {
             status: 'SKIPPED',
             finishedAt: new Date(),
+        },
+        include: {
+            loket: true,
         },
     });
 }

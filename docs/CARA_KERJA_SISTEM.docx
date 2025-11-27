@@ -1,0 +1,99 @@
+
+      <html xmlns:o='urn:schemas-microsoft-com:office:office'
+            xmlns:w='urn:schemas-microsoft-com:office:word'
+            xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+          <meta charset="utf-8">
+          <title>Exported Document</title>
+          <style>
+              body { font-family: Arial, sans-serif; }
+          </style>
+      </head>
+      <body>
+          <h1 id="carakerjasistemsfdantri">Cara Kerja Sistem SFD-Antri</h1>
+<p>Dokumen ini menjelaskan bagaimana sistem antrian SFD-Antri bekerja secara teknis maupun fungsional. Panduan ini ditujukan untuk pengembang atau administrator yang ingin memahami arsitektur di balik layar.</p>
+<h2 id="1pengenalansistem">1. Pengenalan Sistem</h2>
+<p><strong>SFD-Antri</strong> adalah sistem manajemen antrian berbasis web yang modern dan responsif. Sistem ini dirancang untuk menangani antrian di berbagai layanan (seperti rumah sakit, bank, atau kantor pelayanan publik) dengan fitur <em>real-time</em> yang memastikan semua perangkat terhubung secara instan.</p>
+<h3 id="komponenutama">Komponen Utama:</h3>
+<ol>
+<li><strong>Kiosk (Anjungan Mandiri)</strong>: Tempat pengunjung mengambil nomor antrian (bisa via layar sentuh atau HP).</li>
+<li><strong>Display (Layar Utama)</strong>: Layar besar yang menampilkan nomor antrian yang sedang dipanggil beserta video/informasi lainnya.</li>
+<li><strong>Loket (Petugas)</strong>: Dashboard untuk petugas memanggil, melewati, atau menyelesaikan antrian.</li>
+<li><strong>Admin</strong>: Dashboard untuk manajemen user, konfigurasi loket, dan melihat laporan.</li>
+<li><strong>Server</strong>: Otak dari sistem yang menghubungkan semua komponen di atas.</li>
+</ol>
+<hr />
+<h2 id="2arsitekturteknologi">2. Arsitektur Teknologi</h2>
+<p>Sistem ini dibangun menggunakan teknologi web modern yang cepat dan efisien:</p>
+<ul>
+<li><strong>Next.js (React Framework)</strong>: Digunakan untuk membuat tampilan antarmuka (Frontend) dan logika server (Backend API). Next.js membuat aplikasi terasa cepat dan responsif.</li>
+<li><strong>Socket.io (WebSocket)</strong>: Teknologi kunci untuk fitur <strong>Real-time</strong>. Ini memungkinkan server mengirim data ke Display atau Loket secara instan tanpa perlu refresh halaman. Contoh: Saat petugas menekan "Panggil", layar Display langsung berubah detik itu juga.</li>
+<li><strong>Prisma (ORM)</strong>: Alat untuk berkomunikasi dengan database. Memudahkan pengelolaan data antrian, user, dan loket.</li>
+<li><strong>MySQL (Database)</strong>: Tempat penyimpanan data permanen. Semua riwayat antrian, data user, dan konfigurasi tersimpan di sini.</li>
+<li><strong>Tailwind CSS</strong>: Framework desain untuk membuat tampilan yang cantik, rapi, dan responsif di HP maupun Desktop.</li>
+</ul>
+<hr />
+<h2 id="3alurdatadataflow">3. Alur Data (Data Flow)</h2>
+<p>Berikut adalah perjalanan data dari pengunjung datang hingga selesai dilayani:</p>
+<h3 id="tahap1pengambilanantriankiosk">Tahap 1: Pengambilan Antrian (Kiosk)</h3>
+<ol>
+<li>Pengunjung datang ke <strong>Kiosk</strong> atau scan QR Code.</li>
+<li>Pengunjung memilih layanan (misal: Layanan Umum atau Barang).</li>
+<li><strong>Kiosk</strong> mengirim permintaan ke <strong>Server</strong>.</li>
+<li><strong>Server</strong> membuat nomor antrian baru di <strong>Database</strong> (misal: A-001).</li>
+<li><strong>Server</strong> memberitahu <strong>Kiosk</strong> untuk mencetak/menampilkan nomor tiket.</li>
+<li><em>Secara bersamaan</em>, <strong>Server</strong> mengirim sinyal ke dashboard <strong>Loket</strong> dan <strong>Admin</strong> bahwa ada antrian baru yang menunggu.</li>
+</ol>
+<h3 id="tahap2pemanggilanloket">Tahap 2: Pemanggilan (Loket)</h3>
+<ol>
+<li>Petugas di <strong>Loket</strong> melihat daftar antrian yang menunggu.</li>
+<li>Petugas menekan tombol <strong>"Panggil Berikutnya"</strong>.</li>
+<li><strong>Loket</strong> mengirim perintah ke <strong>Server</strong>.</li>
+<li><strong>Server</strong> memperbarui status antrian menjadi "CALLED" di <strong>Database</strong>.</li>
+<li><strong>Server</strong> memancarkan sinyal (Broadcast) ke seluruh sistem:<ul>
+<li><strong>Display</strong>: Langsung menampilkan nomor A-001 dengan animasi berkedip dan memutar suara panggilan ("Nomor Antrian A, Kosong, Kosong, Satu, Silakan ke Loket Satu").</li>
+<li><strong>Loket Lain</strong>: Daftar antrian diperbarui agar tidak ada petugas lain yang memanggil nomor yang sama.</li></ul></li>
+</ol>
+<h3 id="tahap3pelayananpenyelesaian">Tahap 3: Pelayanan &amp; Penyelesaian</h3>
+<ol>
+<li>Setelah pelayanan selesai, petugas menekan <strong>"Selesai"</strong>.</li>
+<li>Status antrian diubah menjadi "COMPLETED".</li>
+<li>Data disimpan sebagai riwayat untuk laporan harian.</li>
+<li>Petugas siap memanggil antrian berikutnya.</li>
+</ol>
+<hr />
+<h2 id="4strukturdatabase">4. Struktur Database</h2>
+<p>Sistem menggunakan beberapa tabel utama untuk menyimpan data:</p>
+<h3 id="tabeluser">Tabel <code>User</code></h3>
+<p>Menyimpan data pengguna sistem (Admin dan Petugas Loket).</p>
+<ul>
+<li><code>username</code>: Nama login.</li>
+<li><code>password</code>: Kata sandi (dienkripsi agar aman).</li>
+<li><code>role</code>: Peran user (ADMIN atau PETUGAS).</li>
+</ul>
+<h3 id="tabelloket">Tabel <code>Loket</code></h3>
+<p>Menyimpan konfigurasi loket pelayanan.</p>
+<ul>
+<li><code>name</code>: Nama loket (contoh: "Loket 1", "Customer Service").</li>
+<li><code>status</code>: Status loket (Buka, Tutup, Istirahat).</li>
+<li><code>userId</code>: Petugas yang sedang menjaga loket tersebut.</li>
+</ul>
+<h3 id="tabelqueueantrian">Tabel <code>Queue</code> (Antrian)</h3>
+<p>Tabel paling sibuk yang mencatat setiap tiket antrian.</p>
+<ul>
+<li><code>number</code>: Urutan angka (1, 2, 3…).</li>
+<li><code>code</code>: Kode lengkap (A-001).</li>
+<li><code>type</code>: Jenis layanan.</li>
+<li><code>status</code>: Status saat ini (WAITING, CALLED, COMPLETED, SKIPPED).</li>
+<li><code>timestamps</code>: Waktu ambil, waktu panggil, dan waktu selesai (untuk menghitung durasi pelayanan).</li>
+</ul>
+<hr />
+<h2 id="5keamanankestabilan">5. Keamanan &amp; Kestabilan</h2>
+<ul>
+<li><strong>Enkripsi Password</strong>: Password tidak disimpan mentah, tapi diacak menggunakan algoritma Argon2/Bcrypt sehingga aman dari peretas.</li>
+<li><strong>Validasi Data</strong>: Setiap input dari user diperiksa (validasi) untuk mencegah error atau data sampah masuk ke sistem.</li>
+<li><strong>Koneksi Database</strong>: Menggunakan <em>Connection Pooling</em> untuk menangani banyak permintaan sekaligus tanpa membuat database macet.</li>
+</ul>
+      </body>
+      </html>
+    

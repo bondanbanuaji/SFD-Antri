@@ -1,5 +1,6 @@
 # Database MySQL XAMPP
-DATABASE_URL="mysql://root:@localhost:3306/antrian_db"
+# Add connection pooling parameters for production
+DATABASE_URL="mysql://root:@localhost:3306/antrian_db?connection_limit=10&pool_timeout=20"
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000

@@ -1,0 +1,170 @@
+
+      <html xmlns:o='urn:schemas-microsoft-com:office:office'
+            xmlns:w='urn:schemas-microsoft-com:office:word'
+            xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+          <meta charset="utf-8">
+          <title>Exported Document</title>
+          <style>
+              body { font-family: Arial, sans-serif; }
+          </style>
+      </head>
+      <body>
+          <h1 id="panduanlengkapsetuplokalzerotohero">Panduan Lengkap Setup Lokal (Zero to Hero)</h1>
+<p>Panduan ini akan menuntun Anda dari <strong>NOL</strong> (belum punya aplikasi) sampai aplikasi bisa jalan dan dipakai simulasi (Kiosk, Display, Loket) di jaringan lokal Anda.</p>
+<p>Panduan ini mencakup cara instalasi untuk <strong>Windows</strong>, <strong>macOS</strong>, dan <strong>Linux</strong>.</p>
+<hr />
+<h2 id="bab1persiapansoftwarewajib">BAB 1: Persiapan Software (Wajib)</h2>
+<p>Sebelum download aplikasi, pastikan komputer Anda sudah terinstall alat-alat berikut.</p>
+<h3 id="penggunawindows">🪟 Pengguna Windows</h3>
+<ol>
+<li><strong>Install Node.js</strong>:<ul>
+<li>Download versi <strong>LTS</strong> di <a href="https://nodejs.org/">nodejs.org</a>.</li>
+<li>Install seperti biasa (Next &gt; Next &gt; Finish).</li></ul></li>
+<li><strong>Install Git</strong>:<ul>
+<li>Download di <a href="https://git-scm.com/download/win">git-scm.com</a>.</li>
+<li>Install dengan pengaturan default.</li></ul></li>
+<li><strong>Install Database (XAMPP)</strong>:<ul>
+<li>Download XAMPP di <a href="https://www.apachefriends.org/">apachefriends.org</a>.</li>
+<li>Install dan jalankan <strong>XAMPP Control Panel</strong>.</li>
+<li>Klik <strong>Start</strong> pada bagian <strong>MySQL</strong>.</li></ul></li>
+</ol>
+<h3 id="penggunamacos">🍎 Pengguna macOS</h3>
+<ol>
+<li><strong>Install Homebrew</strong> (jika belum ada):<ul>
+<li>Buka Terminal, copy-paste perintah dari <a href="https://brew.sh/">brew.sh</a>.</li></ul></li>
+<li><strong>Install Node.js & Git</strong>:
+<code>bash
+brew install node git
+</code></li>
+<li><strong>Install MySQL</strong>:<ul>
+<li>Bisa pakai <a href="https://dbngin.com/">DBngin</a> (lebih mudah) atau <code>brew install mysql</code>.</li>
+<li>Pastikan service database sudah jalan.</li></ul></li>
+</ol>
+<h3 id="penggunalinuxubuntudebian">🐧 Pengguna Linux (Ubuntu/Debian)</h3>
+<p>Buka Terminal dan jalankan:</p>
+<pre><code class="bash language-bash"># Update repository
+sudo apt update
+
+# Install Node.js (via NVM disarankan, atau langsung apt)
+sudo apt install nodejs npm git -y
+
+# Install MySQL/MariaDB
+sudo apt install mariadb-server -y
+sudo service mysql start
+</code></pre>
+<hr />
+<h2 id="bab2downloadinstalasiaplikasi">BAB 2: Download &amp; Instalasi Aplikasi</h2>
+<p>Lakukan langkah ini di <strong>Terminal</strong> (Mac/Linux) atau <strong>Command Prompt/PowerShell</strong> (Windows).</p>
+<h3 id="1clonedownloadkodeprogram">1. Clone (Download) Kode Program</h3>
+<p>Masuk ke folder dimana Anda ingin menyimpan proyek ini, lalu ketik:</p>
+<pre><code class="bash language-bash">https://github.com/bondanbanuaji/SFD-Antri.git
+cd SFD-Antri
+</code></pre>
+<p><em>(Ganti URL git dengan link repository proyek ini)</em></p>
+<h3 id="2installdependencies">2. Install Dependencies</h3>
+<p>Perintah ini akan mendownload semua "bahan baku" aplikasi. Pastikan ada internet.</p>
+<pre><code class="bash language-bash">npm install
+</code></pre>
+<p><em>Tunggu sampai selesai (muncul tulisan "added … packages").</em></p>
+<hr />
+<h2 id="bab3konfigurasidatabasejaringan">BAB 3: Konfigurasi Database &amp; Jaringan</h2>
+<p>Ini langkah paling penting agar aplikasi bisa jalan dan diakses HP lain.</p>
+<h3 id="1siapkandatabase">1. Siapkan Database</h3>
+<ul>
+<li>Buka aplikasi database manager (phpMyAdmin di <code>http://localhost/phpmyadmin</code> atau DBeaver).</li>
+<li>Buat database baru dengan nama: <code>antrian_db</code>.</li>
+</ul>
+<h3 id="2caritahuipaddresskomputeranda">2. Cari Tahu IP Address Komputer Anda</h3>
+<p>Agar HP atau laptop lain bisa akses, kita butuh alamat IP komputer ini.</p>
+<ul>
+<li><strong>Windows</strong>: Ketik <code>ipconfig</code> di CMD. Cari <strong>IPv4 Address</strong>. (Contoh: <code>192.168.1.10</code>)</li>
+<li><strong>Mac/Linux</strong>: Ketik <code>ifconfig</code> atau <code>ip a</code> di Terminal. Cari angka <code>inet</code> (biasanya <code>192.168.x.x</code>).</li>
+</ul>
+<h3 id="3settingfileenv">3. Setting File <code>.env</code></h3>
+<ol>
+<li>Copy file <code>example .env copy</code> dan ubah namanya jadi <code>.env</code>.</li>
+<li>Buka file <code>.env</code> dengan text editor (Notepad/VS Code).</li>
+<li>Ubah isinya seperti ini:</li>
+</ol>
+<pre><code class="env language-env"># DATABASE: Sesuaikan user &amp; password database Anda
+# Jika XAMPP default: user=root, password kosong
+DATABASE_URL="mysql://root:@localhost:3306/antrian_db"
+
+# APP URL: GANTI 'localhost' dengan IP Address yang tadi dicatat!
+# Contoh jika IP Anda 192.168.1.10:
+NEXT_PUBLIC_APP_URL=http://192.168.1.10:3000
+
+# Lainnya biarkan default
+NODE_ENV=development
+JWT_SECRET=rahasia-dapur
+</code></pre>
+<h3 id="4isidatabasemigrationseed">4. Isi Database (Migration &amp; Seed)</h3>
+<p>Kembali ke Terminal/CMD, jalankan perintah ini satu per satu:</p>
+<pre><code class="bash language-bash"># Membuat tabel-tabel otomatis
+npx prisma migrate deploy
+
+# Mengisi data awal (Admin &amp; Loket)
+npx prisma db seed
+</code></pre>
+<p><em>Jika sukses, akan muncul pesan "Seeding finished".</em></p>
+<hr />
+<h2 id="bab4menjalankanaplikasi">BAB 4: Menjalankan Aplikasi</h2>
+<p>Sekarang saatnya menyalakan mesin!</p>
+<h3 id="jalankanserver">Jalankan Server</h3>
+<p>Di Terminal/CMD, ketik:</p>
+<pre><code class="bash language-bash">npm run dev
+</code></pre>
+<p>Tunggu sampai muncul tulisan:</p>
+<pre><code>   Local:    http://localhost:3000
+   Network:  http://192.168.1.10:3000  &lt;-- INI ALAMAT PENTING
+</code></pre>
+<hr />
+<h2 id="bab5simulasipenggunaanskenarioreal">BAB 5: Simulasi Penggunaan (Skenario Real)</h2>
+<p>Sekarang sistem sudah jalan. Mari kita simulasikan seperti di kantor/klinik asli.
+<strong>Syarat: Semua perangkat harus konek ke Wi-Fi yang sama.</strong></p>
+<h3 id="perangkat1laptopserveradminloket">🖥️ Perangkat 1: Laptop Server (Admin &amp; Loket)</h3>
+<p>Laptop ini yang menjalankan <code>npm run dev</code> tadi. Jangan tutup terminalnya!</p>
+<ol>
+<li>Buka Browser (Chrome).</li>
+<li>Buka <code>http://localhost:3000/login</code>.</li>
+<li>Login sebagai <strong>Petugas</strong> (User: <code>petugas1</code>, Pass: <code>password</code>).</li>
+<li>Standby di halaman Loket.</li>
+</ol>
+<h3 id="perangkat2hppengunjungkiosk">📱 Perangkat 2: HP Pengunjung (Kiosk)</h3>
+<ol>
+<li>Buka Browser di HP (Chrome/Safari).</li>
+<li>Ketik alamat Network tadi: <code>http://192.168.1.10:3000</code> (Sesuaikan IP).</li>
+<li>Pilih menu "Ambil Antrian".</li>
+<li>Coba ambil satu tiket.<ul>
+<li><em>Hasil</em>: Di HP muncul tiket, di Laptop Server (Loket) antrian bertambah otomatis!</li></ul></li>
+</ol>
+<h3 id="perangkat3smarttvlaptopkeduadisplay">📺 Perangkat 3: Smart TV / Laptop Kedua (Display)</h3>
+<ol>
+<li>Buka Browser.</li>
+<li>Ketik: <code>http://192.168.1.10:3000/display</code>.</li>
+<li>Tampilan layar besar antrian muncul.</li>
+<li><strong>Tes Panggil</strong>:<ul>
+<li>Di Laptop Server (Loket), tekan tombol "Panggil".</li>
+<li><em>Hasil</em>: Di Perangkat 3 (Display) akan muncul notifikasi besar dan suara "Nomor Antrian… Silakan ke Loket…".</li></ul></li>
+</ol>
+<hr />
+<h2 id="troubleshootingmasalahumum">Troubleshooting (Masalah Umum)</h2>
+<p><strong>Q: HP tidak bisa buka alamatnya (Loading terus/Error)?</strong></p>
+<ul>
+<li><strong>Windows</strong>: Matikan Firewall sebentar. (Search "Firewall &amp; network protection" &gt; Private network &gt; Off).</li>
+<li><strong>Jaringan</strong>: Pastikan HP tidak pakai Data Seluler, harus Wi-Fi yang sama dengan Laptop.</li>
+</ul>
+<p><strong>Q: Error "Prisma Client could not initialize"?</strong></p>
+<ul>
+<li>Cek apakah XAMPP/MySQL sudah distart?</li>
+<li>Cek apakah password di <code>.env</code> sudah benar?</li>
+</ul>
+<p><strong>Q: Tidak ada suara saat dipanggil?</strong></p>
+<ul>
+<li>Browser memblokir suara otomatis (Autoplay Policy).</li>
+<li>Klik sembarang tempat di halaman Display minimal sekali agar browser mengizinkan suara.</li>
+</ul>
+      </body>
+      </html>
+    

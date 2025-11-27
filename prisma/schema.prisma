@@ -11,23 +11,30 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   username  String   @unique
-  password  String   @db.VarChar(255) // Argon2 hash
+  password  String   @db.VarChar(512) // Argon2 hash (increased for safety)
   role      Role     @default(PETUGAS)
   name      String   @db.VarChar(255)
   loket     Loket?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+  
+  @@index([deletedAt])
 }
 
 model Loket {
   id        Int         @id @default(autoincrement())
   name      String      @db.VarChar(50) // "Loket 1", "Loket 2", etc.
   userId    String?     @unique // Currently assigned staff
-  user      User?       @relation(fields: [userId], references: [id])
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   queues    Queue[]
   status    LoketStatus @default(CLOSED)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
+  deletedAt DateTime?   // Soft delete
+  
+  @@index([status])
+  @@index([deletedAt])
 }
 
 model Queue {
@@ -37,15 +44,28 @@ model Queue {
   type       ServiceType
   status     QueueStatus @default(WAITING)
   loketId    Int?
-  loket      Loket?      @relation(fields: [loketId], references: [id])
+  loket      Loket?      @relation(fields: [loketId], references: [id], onDelete: SetNull)
+  
+  // Realtime Display Data
+  transportCode  String?   @db.VarChar(20) // "BUS-001", "KA-123"
+  passengerName  String?   @db.VarChar(100)
+  passengerRoute String?   @db.VarChar(150) // "Jakarta - Bandung" (increased from 100)
   
   // Timestamps for Analytics
   createdAt  DateTime    @default(now()) // Waktu ambil
   calledAt   DateTime?   // Waktu panggil
   finishedAt DateTime?   // Waktu selesai/batal
+  deletedAt  DateTime?   // Soft delete
   
+  // Optimized indexes for common queries
   @@index([status, type])
+  @@index([status, loketId])        // For loket-specific queries
+  @@index([loketId, status, createdAt]) // For loket dashboard
+  @@index([type, status])           // For type-filtered lists
   @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([type, createdAt])
+  @@index([deletedAt])              // For soft delete filtering
 }
 
 enum Role {

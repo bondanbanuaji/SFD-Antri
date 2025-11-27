@@ -1,0 +1,122 @@
+
+      <html xmlns:o='urn:schemas-microsoft-com:office:office'
+            xmlns:w='urn:schemas-microsoft-com:office:word'
+            xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+          <meta charset="utf-8">
+          <title>Exported Document</title>
+          <style>
+              body { font-family: Arial, sans-serif; }
+          </style>
+      </head>
+      <body>
+          <h1 id="panduandeploymentsfdantri">Panduan Deployment SFD-Antri</h1>
+<p>Panduan ini menjelaskan cara menginstal dan menjalankan aplikasi SFD-Antri di server produksi atau komputer lokal. Panduan ini mencakup instruksi untuk <strong>Windows</strong>, <strong>Linux (Ubuntu/Debian)</strong>, dan <strong>macOS</strong>.</p>
+<h2 id="1persyaratansistemprerequisites">1. Persyaratan Sistem (Prerequisites)</h2>
+<p>Sebelum memulai, pastikan perangkat Anda sudah terinstall software berikut:</p>
+<ol>
+<li><strong>Node.js</strong> (Versi 18 atau lebih baru)<ul>
+<li><em>Cek versi</em>: <code>node -v</code></li>
+<li><em>Download</em>: <a href="https://nodejs.org/">nodejs.org</a></li></ul></li>
+<li><strong>MySQL Database</strong> (Versi 8.0 atau MariaDB)<ul>
+<li>Bisa menggunakan XAMPP (Windows/Mac) atau install manual.</li></ul></li>
+<li><strong>Git</strong> (Untuk mengunduh kode program)<ul>
+<li><em>Cek versi</em>: <code>git --version</code></li></ul></li>
+</ol>
+<hr />
+<h2 id="2konfigurasidatabaseenvironment">2. Konfigurasi Database &amp; Environment</h2>
+<h3 id="langkah1siapkandatabase">Langkah 1: Siapkan Database</h3>
+<ol>
+<li>Buka aplikasi manajemen database Anda (phpMyAdmin, DBeaver, atau Terminal).</li>
+<li>Buat database baru dengan nama <code>antrian_db</code> (atau nama lain sesuai keinginan).</li>
+</ol>
+<h3 id="langkah2konfigurasienv">Langkah 2: Konfigurasi .env</h3>
+<ol>
+<li>Duplikasi file <code>example .env copy</code> menjadi <code>.env</code>.<ul>
+<li><strong>Windows</strong>: Copy paste file biasa, lalu rename.</li>
+<li><strong>Terminal</strong>: <code>cp "example .env copy" .env</code></li></ul></li>
+<li>Buka file <code>.env</code> dengan text editor (Notepad, VS Code, Nano).</li>
+<li>Edit bagian <code>DATABASE_URL</code> sesuai settingan database Anda.</li>
+</ol>
+<p><strong>Format URL Database:</strong>
+<code>mysql://USER:PASSWORD@HOST:PORT/NAMA_DATABASE</code></p>
+<p><strong>Contoh Konfigurasi:</strong></p>
+<ul>
+<li><p><strong>XAMPP (Windows/Mac) - Default tanpa password:</strong></p>
+<pre><code class="env language-env">DATABASE_URL="mysql://root:@localhost:3306/antrian_db"
+</code></pre></li>
+<li><p><strong>Linux / Server Production (dengan password):</strong>
+<code>env
+DATABASE_URL="mysql://root:password_rahasia@localhost:3306/antrian_db"
+</code></p></li>
+</ul>
+<h3 id="langkah3sinkronisasidatabasemigration">Langkah 3: Sinkronisasi Database (Migration)</h3>
+<p>Jalankan perintah ini untuk membuat tabel-tabel otomatis di database Anda:</p>
+<pre><code class="bash language-bash">npx prisma migrate deploy
+</code></pre>
+<p><em>Jika sukses, akan muncul pesan "The schema engine has successfully applied the following migrations…"</em></p>
+<h3 id="langkah4seedingisidataawal">Langkah 4: Seeding (Isi Data Awal)</h3>
+<p>Untuk mengisi database dengan user admin default dan loket awal:</p>
+<pre><code class="bash language-bash">npx prisma db seed
+</code></pre>
+<hr />
+<h2 id="3menjalankanaplikasi">3. Menjalankan Aplikasi</h2>
+<h3 id="modedevelopmentuntukpercobaanedit">Mode Development (Untuk Percobaan/Edit)</h3>
+<p>Gunakan mode ini jika Anda ingin mengubah kodingan atau sekedar mencoba di laptop.</p>
+<pre><code class="bash language-bash">npm run dev
+</code></pre>
+<p>Akses di browser: <code>http://localhost:3000</code></p>
+<h3 id="modeproductionuntukserverpemakaianasli">Mode Production (Untuk Server/Pemakaian Asli)</h3>
+<p>Gunakan mode ini untuk performa terbaik dan stabil.</p>
+<ol>
+<li><p><strong>Build Aplikasi</strong> (Lakukan ini setiap ada perubahan kode):</p>
+<pre><code class="bash language-bash">npm run build
+</code></pre></li>
+<li><p><strong>Jalankan Server</strong>:
+<code>bash
+npm start
+</code>
+Akses di browser: <code>http://localhost:3000</code></p></li>
+</ol>
+<hr />
+<h2 id="4menjalankandibackgroundopsionaltapidisarankan">4. Menjalankan di Background (Opsional tapi Disarankan)</h2>
+<p>Agar aplikasi tetap jalan meskipun terminal ditutup (khususnya di Server Linux/VPS), gunakan <strong>PM2</strong>.</p>
+<ol>
+<li><p><strong>Install PM2</strong>:</p>
+<pre><code class="bash language-bash">npm install -g pm2
+</code></pre></li>
+<li><p><strong>Jalankan Aplikasi dengan PM2</strong>:</p>
+<pre><code class="bash language-bash">pm2 start npm --name "sfd-antri" -- start
+</code></pre></li>
+<li><p><strong>Cek Status</strong>:</p>
+<pre><code class="bash language-bash">pm2 status
+</code></pre></li>
+<li><p><strong>Agar Otomatis Jalan saat Restart Server</strong>:
+<code>bash
+pm2 startup
+pm2 save
+</code></p></li>
+</ol>
+<hr />
+<h2 id="5catatankhususperos">5. Catatan Khusus per OS</h2>
+<h3 id="windows">🪟 Windows</h3>
+<ul>
+<li>Jika menggunakan <strong>XAMPP</strong>, pastikan tombol "Start" pada MySQL sudah diklik di XAMPP Control Panel.</li>
+<li>Jika perintah <code>npm</code> atau <code>git</code> tidak dikenali, pastikan Anda sudah menambahkannya ke "Environment Variables" Windows atau restart komputer setelah install.</li>
+</ul>
+<h3 id="linuxubuntudebian">🐧 Linux (Ubuntu/Debian)</h3>
+<ul>
+<li>Jika ada error "Permission denied", gunakan <code>sudo</code> di depan perintah (kecuali <code>npm install</code>).</li>
+<li>Pastikan port 3000 sudah dibuka di firewall jika ingin diakses dari luar:
+<code>bash
+sudo ufw allow 3000
+</code></li>
+</ul>
+<h3 id="macos">🍎 macOS</h3>
+<ul>
+<li>Jika menggunakan MySQL native, pastikan service sudah jalan.</li>
+<li>Perintah terminal sama persis dengan Linux.</li>
+</ul>
+      </body>
+      </html>
+    
